@@ -1,0 +1,322 @@
+---
+title: "Automation Failures in ATC: Standard Results"
+author: "ljgs"
+date: "20/11/2019"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+by Luke Strickland
+
+```{r load_packages_and_data, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+
+source("dmc/dmc.R")
+source("dmc/dmc_extras.R")
+load_model ("LBA", "lba_B.R")
+
+theme_set(theme_simple())
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(pander)
+options(digits=2)
+
+load("samples_data/CA_top_samples.RData")
+
+# pp <- h.post.predict.dmc(CA_top_samples, save.simulation = TRUE, cores=8)
+# 
+# theme_set(theme_simple())
+# 
+# rescore_column <- function(df) {
+#   df$R <- factor(as.character(toupper(substr(df$S,1,1))==df$R))
+#   new_data <- attr(df, "data")
+#   new_data$R <- factor(as.character(toupper(substr(new_data$S,1,1))==new_data$R))
+# #  new_data <- new_data %>% select(C, everything())
+#   #%>% select(-R)
+#   attr(df, "data") <- new_data
+# #  df %>% select(reps, C, everything())
+#   #%>% select(-R)
+#   df
+# }
+# 
+# pp1 <- lapply(pp, rescore_column)
+# 
+# 
+# fitlist <- GET.fitgglist.dmc(pp1, factors=c("cond", "failtrial"))
+# save(pp, fitlist,
+#      file="samples_data/CA_top_samples_pp.RData")
+
+load("samples_data/CA_top_samples_pp.RData")
+
+
+
+```
+
+# Model Fit
+
+We obtained Bayesian estimates of model parameters using the Dynamic Models of Choice R Suite (Heathcote et al., 2018). These estimates take the form of posterior distributions, which are proportional to probability distributions of the model parameters given the data and prior information about the parameter values. The details of estimation are discussed in the supplementary materials. Figure 7 displays fit of the posterior predictions of the model to the data. Overall, the model closely fit to the data, including the effects of automation on accuracy and distributions of RT. 
+
+```{r echo= FALSE}
+pp_cap <- "Figure 7. Posterior predictions of performance, averaged over participants. The model predictions correspond to the white circles, the posterior means correspond to the black shaded dots. The error bars display the 95% posterior credible intervals of the predictions. Three quantiles of response time (RT) are depicted, with the 0.1 quantile of RT grouped on the bottom, the median RT at the middle, and the 0.9 quantile of RT at the top."
+```
+
+```{r accuracy_descriptives_fortext, echo= FALSE, message=FALSE, warning=FALSE, fig.height = 7, fig.width=7, fig.cap=pp_cap}
+
+
+
+accs <- fitlist$pps %>% filter(R=="TRUE") %>% select(-R)
+
+accs$cond <- factor(accs$cond, levels=c("A", "M"), labels =
+                      c("Automation Condition", "Manual Condition"))
+
+accs$failtrial <- factor(accs$failtrial, levels=c("nonf", "fail"), labels =
+                      c("Automation Success", "Automation Failure"))
+
+plot1 <- ggplot.RP.dmc(accs, xaxis="cond") +xlab("") +ylab("Accuracy")
+
+corRTs <- fitlist$RTs %>% filter(R=="TRUE") %>% select(-R)
+
+corRTs$cond <- factor(corRTs$cond, levels=c("A", "M"), labels =
+                      c("Automation Condition", "Manual Condition"))
+
+corRTs$failtrial <- factor(corRTs$failtrial, levels=c("nonf", "fail"), labels =
+                      c("Automation Success", "Automation Failure"))
+
+plot2 <- ggplot.RT.dmc(corRTs, xaxis="cond") +xlab("") +ylab("Correct RT")
+
+
+
+errRTs <- fitlist$RTs %>% filter(R=="FALSE") %>% select(-R)
+
+errRTs$cond <- factor(errRTs$cond, levels=c("A", "M"), labels =
+                      c("Automation Condition", "Manual Condition"))
+
+errRTs$failtrial <- factor(errRTs$failtrial, levels=c("nonf", "fail"), labels =
+                      c("Automation Success", "Automation Failure"))
+
+plot3 <- ggplot.RT.dmc(errRTs, xaxis="cond") +xlab("") +ylab("Error RT")
+
+
+grid.arrange(plot1,plot2,plot3)
+
+
+```
+
+```{r evaluate_model_params_calc, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+
+# msds <- get.msds(CA_top_samples)
+# 
+# save(msds, file=
+#       "samples_data/msds_top_samples.RData")
+
+load("samples_data/msds_top_samples.RData")
+
+paste.msd <- function(x) paste(signif(x["M"],2), "(", 
+                               signif(x["SD"],2), ")", sep="")
+zpvec <- function(samples, fun){
+    effect<- group.inference.dist(samples, fun)
+    Z <- mean(effect)/sd(effect)
+    p <- minp(effect)
+    if(p<.001) p <- "< .001" else {
+      p = round(p,3)
+      p= paste("= .", 
+      substr(p,3,10), sep="")
+    }
+    c(round(Z,2), p)
+}
+```
+
+
+# Parameter Inference
+
+For inference we created a group-averaged posterior distribution, by averaging the values of each posterior sample across participants. The values of the averaged model parameters are tabulated in the supplementary materials. In the following sections, we examine the effect of automation on accumulation rate and threshold parameters. To test parameter differences, we calculate a one-tailed posterior *p* value, corresponding to the proportion of posterior samples on which one parameter value was higher than another. To accord with the typical intuition associated with *p* values, we report the *p* value against whichever direction was closest to an observed effect (e.g., a *p* of 0 is evidence in favor of an effect). Many effects were ‘significant’ in the sense that *p* < .001. To give an estimate of effect size, we report the mean of the parameter differences divided by the standard deviation, referred to as *Z*.
+ 
+
+# Excitation and Inhibition
+
+Evidence accumulation rates are plotted in Figure 8. The effects of automation are evaluated by comparing the accumulation rate towards an automation trial with the corresponding accumulation rates in manual conditions. Excitation is indicated by increased accumulation towards the accumulator that agrees with the decision aid (i.e., match). For example, on a conflict trial on which the automation correctly recommends ‘conflict’, excitation would increase the conflict accumulation rate. Inhibition is indicated by reduced accumulation towards the accumulator that disagrees with the decision aid (i.e., mismatch). For example, for conflict trials on which the decision aid correctly labels a conflict, inhibition would reduce accumulation in the ‘non-conflict’ accumulator.
+
+Table 2 contains our statistical tests of excitation and inhibition effects. We found evidence of both. However, inhibition effects were much larger in magnitude than excitation effects. Furthermore, subsequent exploration of the model (see supplementary materials) indicated that inhibition was responsible for the majority of automation’s benefits to accuracy on success trials, and the majority of its cost to accuracy and RT on failure trials. These findings indicate that participants may utilize inhibition, rather than excitation, to avoid over-reliance on the automation in which decisions are made without consideration of task inputs.
+
+
+```{r echo= FALSE}
+Vs_cap <- "Figure 8. Estimates of accumulation rates. The shapes indicate the posterior means and the error bars correspond to the mean plus or minus the posterior standard deviation."
+```
+
+```{r echo=FALSE, fig.cap=Vs_cap, fig.height=6, fig.width=8, message=FALSE, warning=FALSE, results="hide"}
+Vs <- msds[grep("mean_v", rownames(msds)),]
+
+Vs$Cond <- "Manual" 
+Vs$Cond[grep("A", rownames(Vs))] <- "Automation"
+Vs$Auto <- "Automation Success"
+Vs$Auto[grep("fail", rownames(Vs))] <- "Automation Failure"
+Vs$S <- "Conflict"
+Vs$S[grep("nn", rownames(Vs))] <- "Non-conflict"
+Vs$match <- "Match"
+Vs$match[grep("false", rownames(Vs))] <- "Mismatch"
+
+names(Vs)[names(Vs)=="Cond"] <- "Condition"
+
+Vs$exinh <- NA
+Vs$exinh[Vs$Auto=="Automation Success" & Vs$match=="Match"] <- "Excitation"
+Vs$exinh[Vs$Auto=="Automation Failure" & Vs$match=="Match"] <- "Inhibition"
+Vs$exinh[Vs$Auto=="Automation Success" & Vs$match=="Mismatch"] <- "Inhibition"
+Vs$exinh[Vs$Auto=="Automation Failure" & Vs$match=="Mismatch"] <- "Excitation"
+
+
+ggplot(Vs, aes(factor(Auto),M)) + 
+  geom_point(stat = "identity",aes(shape=Condition, col=Condition), size=2.5) +
+  geom_errorbar(aes(ymax = M + SD, ymin = M - SD, width = 0.3, col=Condition))+ 
+  ylab("Accumulation Rate") + xlab("")+
+  facet_grid(S ~ match,scales = "free", space = "free") +
+    theme(text = element_text(size = 12))
+
+```
+
+Table 2
+*Statistical tests of automation-induced excitation and inhibition effects. We depict Z(p), where Z is the posterior mean of the parameter difference divided by its standard deviation, and p is the one-tailed posterior probability against their being an effect.*
+
+```{r echo= FALSE ,results = "hide", message=FALSE, warning=FALSE, results='asis'}
+
+conf_inh_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.M.fail.true",, drop=F] - 
+           thetas[,"mean_v.cc.A.fail.true",, drop=F])
+
+conf_ex_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.A.fail.false",, drop=F] - 
+          thetas[,"mean_v.cc.M.fail.false",, drop=F] 
+           )
+
+conf_ex_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.A.nonf.true",, drop=F] -
+          thetas[,"mean_v.cc.M.nonf.true",, drop=F] 
+           )
+
+conf_inh_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.M.nonf.false",, drop=F] - 
+           thetas[,"mean_v.cc.A.nonf.false",, drop=F])
+
+
+
+nonconf_inh_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.M.fail.true",, drop=F] - 
+           thetas[,"mean_v.nn.A.fail.true",, drop=F])
+
+nonconf_ex_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.A.fail.false",, drop=F] - 
+          thetas[,"mean_v.nn.M.fail.false",, drop=F] 
+           )
+
+nonconf_ex_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.A.nonf.true",, drop=F] -
+          thetas[,"mean_v.nn.M.nonf.true",, drop=F] 
+           )
+
+nonconf_inh_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.M.nonf.false",, drop=F] - 
+           thetas[,"mean_v.nn.A.nonf.false",, drop=F])
+
+
+
+
+inhextab <- rbind(
+  c(conf_ex_success, conf_inh_success),
+  c(conf_ex_fail, conf_inh_fail),
+  c(conf_ex_success, nonconf_inh_success),
+  c(conf_ex_fail, nonconf_inh_fail)
+  
+      )
+
+rownames(inhextab) <- c("Conflict Automation Success", "Conflict Automation Failure",
+                        "Non-conflict Automation Success", "Non-conflict Automation Failure")
+colnames(inhextab) <- c("Excitation", "Inhibition")
+
+pandoc.table(inhextab)
+
+
+```
+
+
+# Threshold effects
+
+Threshold estimates are plotted in Figure 9. Statistical tests of differences across automated and manual conditions in thresholds are tabulated in Table 3. Overall, automation had little effect on thresholds. On session two, both conflict and non-conflict thresholds were slightly higher in manual conditions than automated conditions. However, simulations indicate that these effects did not contribute substantially to automation use or the effect of automation failures on correct RTs (supplementary materials). Thus, in the current design, automation primarily affected participants’ evidence accumulation, with little evidence for substantial shifts in their speed-accuracy trade-offs or bias. 
+
+```{r echo= FALSE}
+Bs_cap <- "Figure 9. Estimates of thresholds. The shapes indicate the posterior means and the error bars correspond to the mean plus or minus the posterior standard deviation."
+```
+
+```{r echo= FALSE , results = "hide", message=FALSE, warning=FALSE, fig.cap = Bs_cap, fig.width = 8, fig.height=3}
+Bs <- msds[grep("B", rownames(msds)),]
+
+Bs$R <- "Non-conflict"
+Bs$R[grep("C", rownames(Bs))] <- "Conflict"
+Bs$Cond <- "Automation"
+Bs$Cond[grep("M", rownames(Bs))] <- "Manual"
+Bs$Session <- "Session One"
+Bs$Session[grep("2", rownames(Bs))] <- "Session Two"
+
+names(Bs)[names(Bs)=="Cond"] <- "Condition"
+
+ggplot(Bs, aes(factor(R),M)) + 
+  geom_point(stat = "identity",aes(col=Condition, shape=Condition), size=2.5) +
+  geom_errorbar(aes(ymax = M + SD, ymin = M - SD, width = 0.3, col=Condition))+ 
+  ylab("Threshold") + xlab("Accumulator")+
+  facet_grid(.~Session)
+
+
+```
+
+Table 3 
+*Statistical tests of differences in thresholds across automated and manual conditions. We depict Z(p), where Z is the posterior mean of the parameter difference divided by its standard deviation, and p is the one-tailed posterior probability against their being an effect.*
+
+```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=6}
+
+B_N_1_MvA <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.1.N",, drop=F] -
+          thetas[,"B.A.1.N",, drop=F] 
+           )
+
+B_N_2_MvA <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.2.N",, drop=F] -
+          thetas[,"B.A.2.N",, drop=F] 
+           )
+
+B_C_1_MvA <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.1.C",, drop=F] -
+          thetas[,"B.A.1.C",, drop=F] 
+           )
+
+B_C_2_MvA <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.2.C",, drop=F] -
+          thetas[,"B.A.2.C",, drop=F] 
+           )
+
+Btab <- rbind(
+  c(B_C_1_MvA, B_C_2_MvA),
+  c(B_N_1_MvA, B_N_2_MvA)
+
+      )
+
+rownames(Btab) <- c("Conflict Accumulator",
+                    "Non-conflict Accumulator")
+colnames(Btab) <- c("Session One", "Session Two")
+
+pandoc.table(Btab)
+
+
+
+```

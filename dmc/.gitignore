@@ -1,0 +1,6 @@
+*.RData
+*.Rhistory
+*.Rproj
+*.Rproj.user
+Testing.R
+fit.R
