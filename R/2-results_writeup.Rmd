@@ -105,13 +105,17 @@ colnames(se_accs)[colnames(se_accs)=="Freq"] <- "seacc"
 
 plot.df <- full_join(mean_accs, se_accs)
 
+plot.df$Automation <- factor(plot.df$Automation, 
+                             levels=c("Automation Success", "Automation Failure"),
+                             labels= c("Automation Correct", "Automation Incorrect"))
+
 ggplot(plot.df, aes(Automation, meanacc)) +geom_point(aes(col=Condition, shape=Condition), size=3)  + 
   facet_grid(Session~Stimulus) + geom_errorbar(aes(
     ymax = meanacc + seacc,
     ymin = meanacc - seacc,
     colour = Condition, width = 0.3
   )) +ylab ("Accuracy") +xlab("") +
-    theme(text = element_text(size = 22))
+    theme(text = element_text(size = 21))
 
 ```
 
@@ -187,6 +191,10 @@ colnames(se_RTs)[colnames(se_RTs)=="Freq"] <- "seRT"
 
 plot.df <- full_join(mean_RTs, se_RTs)
 
+plot.df$Automation <- factor(plot.df$Automation, 
+                             levels=c("Automation Success", "Automation Failure"),
+                             labels= c("Automation Correct", "Automation Incorrect"))
+
 ggplot(plot.df, aes(Automation, meanRT)) +geom_point(aes(col=Condition, shape=Condition), size=3)  + 
    ylab("Mean RT")+ xlab("") +
   facet_grid(Session~Stimulus) + geom_errorbar(aes(
@@ -194,7 +202,7 @@ ggplot(plot.df, aes(Automation, meanRT)) +geom_point(aes(col=Condition, shape=Co
     ymin = meanRT - seRT,
     colour = Condition, width = 0.3
   ))  +
-    theme(text = element_text(size = 22))
+    theme(text = element_text(size = 21))
 ```
 
 
