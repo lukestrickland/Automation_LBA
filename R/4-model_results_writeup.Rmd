@@ -150,8 +150,8 @@ Vs <- msds[grep("mean_v", rownames(msds)),]
 
 Vs$Cond <- "Manual" 
 Vs$Cond[grep("A", rownames(Vs))] <- "Automation"
-Vs$Auto <- "Automation Success"
-Vs$Auto[grep("fail", rownames(Vs))] <- "Automation Failure"
+Vs$Auto <- "Automation Correct"
+Vs$Auto[grep("fail", rownames(Vs))] <- "Automation Incorrect"
 Vs$S <- "Conflict"
 Vs$S[grep("nn", rownames(Vs))] <- "Non-conflict"
 Vs$match <- "Match"
@@ -160,10 +160,10 @@ Vs$match[grep("false", rownames(Vs))] <- "Mismatch"
 names(Vs)[names(Vs)=="Cond"] <- "Condition"
 
 Vs$exinh <- NA
-Vs$exinh[Vs$Auto=="Automation Success" & Vs$match=="Match"] <- "Excitation"
-Vs$exinh[Vs$Auto=="Automation Failure" & Vs$match=="Match"] <- "Inhibition"
-Vs$exinh[Vs$Auto=="Automation Success" & Vs$match=="Mismatch"] <- "Inhibition"
-Vs$exinh[Vs$Auto=="Automation Failure" & Vs$match=="Mismatch"] <- "Excitation"
+Vs$exinh[Vs$Auto=="Automation Correct" & Vs$match=="Match"] <- "Excitation"
+Vs$exinh[Vs$Auto=="Automation Incorrect" & Vs$match=="Match"] <- "Inhibition"
+Vs$exinh[Vs$Auto=="Automation Correct" & Vs$match=="Mismatch"] <- "Inhibition"
+Vs$exinh[Vs$Auto=="Automation Incorrect" & Vs$match=="Mismatch"] <- "Excitation"
 
 
 ggplot(Vs, aes(factor(Auto),M)) + 
