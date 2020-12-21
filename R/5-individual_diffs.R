@@ -40,13 +40,13 @@ get_individual_summaries <- function(theta_FUN, hsamples, effect_name){
 inhibition <- function(x) (
                      (
                         #non-conflict, non-fail, false reduction   
-                        (x[,"mean_v.nn.M.nonf.false",] - x[,"mean_v.nn.A.nonf.false",]) +
+                        (x[,"mean_v.nn.M.nonf.false",,drop=FALSE] - x[,"mean_v.nn.A.nonf.false",,drop=FALSE]) +
                         #non-conflict, fail, true reduction
-                        (x[,"mean_v.nn.M.fail.true",] - x[,"mean_v.nn.A.fail.true",]) +
+                        (x[,"mean_v.nn.M.fail.true",,drop=FALSE] - x[,"mean_v.nn.A.fail.true",,drop=FALSE]) +
                         #conflict, non-fail, false reduction  
-                        (x[,"mean_v.cc.M.nonf.false",] - x[,"mean_v.cc.A.nonf.false",]) +
+                        (x[,"mean_v.cc.M.nonf.false",,drop=FALSE] - x[,"mean_v.cc.A.nonf.false",,drop=FALSE]) +
                         #conflict, fail, true reduction
-                        (x[,"mean_v.cc.M.fail.true",] - x[,"mean_v.cc.A.fail.true",]) 
+                        (x[,"mean_v.cc.M.fail.true",,drop=FALSE] - x[,"mean_v.cc.A.fail.true",,drop=FALSE]) 
                      )/4
 )
 
@@ -54,13 +54,13 @@ inhibition <- function(x) (
 excitation <- function(x) (
                      (
                         #non-conflict, non-fail, true increase   
-                        (x[,"mean_v.nn.A.nonf.true",] - x[,"mean_v.nn.M.nonf.true",]) +
+                        (x[,"mean_v.nn.A.nonf.true",,drop=FALSE] - x[,"mean_v.nn.M.nonf.true",,drop=FALSE]) +
                         #non-conflict, fail, false increase
-                        (x[,"mean_v.nn.A.fail.false",] - x[,"mean_v.nn.M.fail.false",]) +
+                        (x[,"mean_v.nn.A.fail.false",,drop=FALSE] - x[,"mean_v.nn.M.fail.false",,drop=FALSE]) +
                         #conflict, non-fail, true increase
-                        (x[,"mean_v.cc.A.nonf.true",] - x[,"mean_v.cc.M.nonf.true",]) +
+                        (x[,"mean_v.cc.A.nonf.true",,drop=FALSE] - x[,"mean_v.cc.M.nonf.true",,drop=FALSE]) +
                         #conflict, fail, false increase
-                        (x[,"mean_v.cc.A.fail.false",] - x[,"mean_v.cc.M.fail.false",]) 
+                        (x[,"mean_v.cc.A.fail.false",,drop=FALSE] - x[,"mean_v.cc.M.fail.false",,drop=FALSE]) 
                      )/4
 )
                
