@@ -247,7 +247,7 @@ did not correlate with boosts in automation accuracy on successful automation tr
 costs to accuracy on automation incorrect trials *r* (`r cor_rel_accdrop$parameter`)=
 `r cor_rel_accdrop$estimate`, *p* = `r cor_rel_accdrop$p.value`, or costs to RT
 on automation incorrect trials, *r* (`r cor_rel_RTcost$parameter`)=
-`r cor_rel_accdrop$estimate`, *p* = `r cor_rel_RTcost$p.value`.
+`r cor_rel_RTcost$estimate`, *p* = `r cor_rel_RTcost$p.value`.
 
 
 
